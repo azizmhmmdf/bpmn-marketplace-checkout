@@ -58,7 +58,7 @@ Di dokumen ini dijelasin alur **proses checkout di marketplace** pakai notasi **
 ---
 
 ## Ringkasan
-Jadi intinya, proses ini bikin proses checkout jadi jelas dan terstruktur. mulai dari:
+Jadi intinya, bikin proses checkout jadi jelas dan terstruktur. mulai dari:
 - Pelanggan ngisi data dan konfirmasi pesanan  
 - Sistem urus pembayaran, stok, notifikasi, sampai pengiriman  
 - Ada alur khusus kalau pembayaran gagal  
