@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:Definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0yudx1t" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="11.5.0" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_Customer" name="Customer" processRef="Process_Customer" />
+    <bpmn:participant id="Participant_Marketplace" name="Marketplace System" processRef="Process_Marketplace" />
+    <bpmn:messageFlow id="Flow_0t4n87k" sourceRef="Task_ConfirmOrder_Customer" targetRef="StartEvent_Marketplace_OrderReceived" />
+    <bpmn:messageFlow id="Flow_1e389qf" sourceRef="Task_SendFailureNotification" targetRef="Event_ReceiveFailure" />
+    <bpmn:messageFlow id="Flow_19l3uoy" sourceRef="Task_SendConfirmation" targetRef="Event_ReceiveConfirmation" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Customer" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_Customer_Checkout" name="Checkout Initiated">
+      <bpmn:outgoing>Flow_1u32515</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_FillDetails" name="Fill Checkout Details">
+      <bpmn:incoming>Flow_1u32515</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lwd71x</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1u32515" sourceRef="StartEvent_Customer_Checkout" targetRef="Task_FillDetails" />
+    <bpmn:task id="Task_ConfirmOrder_Customer" name="Confirm Order">
+      <bpmn:incoming>Flow_1lwd71x</bpmn:incoming>
+      <bpmn:outgoing>Flow_1sxz85j</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1lwd71x" sourceRef="Task_FillDetails" targetRef="Task_ConfirmOrder_Customer" />
+    <bpmn:eventBasedGateway id="Gateway_WaitForResponse">
+      <bpmn:incoming>Flow_1sxz85j</bpmn:incoming>
+      <bpmn:outgoing>Flow_0g37n8j</bpmn:outgoing>
+      <bpmn:outgoing>Flow_19tq335</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:sequenceFlow id="Flow_1sxz85j" sourceRef="Task_ConfirmOrder_Customer" targetRef="Gateway_WaitForResponse" />
+    <bpmn:intermediateCatchEvent id="Event_ReceiveConfirmation" name="Receive Order Confirmation">
+      <bpmn:incoming>Flow_0g37n8j</bpmn:incoming>
+      <bpmn:outgoing>Flow_0v8lff5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1r0z3q7" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0g37n8j" sourceRef="Gateway_WaitForResponse" targetRef="Event_ReceiveConfirmation" />
+    <bpmn:intermediateCatchEvent id="Event_ReceiveFailure" name="Receive Failure Notification">
+      <bpmn:incoming>Flow_19tq335</bpmn:incoming>
+      <bpmn:outgoing>Flow_0h0yv3b</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0i88yvi" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_19tq335" sourceRef="Gateway_WaitForResponse" targetRef="Event_ReceiveFailure" />
+    <bpmn:endEvent id="EndEvent_Customer_Success">
+      <bpmn:incoming>Flow_0v8lff5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0v8lff5" sourceRef="Event_ReceiveConfirmation" targetRef="EndEvent_Customer_Success" />
+    <bpmn:endEvent id="EndEvent_Customer_Fail">
+      <bpmn:incoming>Flow_0h0yv3b</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0h0yv3b" sourceRef="Event_ReceiveFailure" targetRef="EndEvent_Customer_Fail" />
+  </bpmn:process>
+  <bpmn:process id="Process_Marketplace" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_Marketplace_OrderReceived" name="Receive Order Request">
+      <bpmn:outgoing>Flow_1d1m2f6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1k3cvv1" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1d1m2f6" sourceRef="StartEvent_Marketplace_OrderReceived" targetRef="Task_ProcessPayment" />
+    <bpmn:serviceTask id="Task_ProcessPayment" name="Process Payment">
+      <bpmn:incoming>Flow_1d1m2f6</bpmn:incoming>
+      <bpmn:outgoing>Flow_09d6c7u</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_PaymentCheck" name="Payment Successful?">
+      <bpmn:incoming>Flow_09d6c7u</bpmn:incoming>
+      <bpmn:outgoing>Flow_Failure</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Success</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_09d6c7u" sourceRef="Task_ProcessPayment" targetRef="Gateway_PaymentCheck" />
+    <bpmn:sequenceFlow id="Flow_Failure" name="No" sourceRef="Gateway_PaymentCheck" targetRef="Task_SendFailureNotification" />
+    <bpmn:serviceTask id="Task_SendFailureNotification" name="Send Failure Notification">
+      <bpmn:incoming>Flow_Failure</bpmn:incoming>
+      <bpmn:outgoing>Flow_1n87dql</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_Marketplace_Fail">
+      <bpmn:incoming>Flow_1n87dql</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1n87dql" sourceRef="Task_SendFailureNotification" targetRef="EndEvent_Marketplace_Fail" />
+    <bpmn:sequenceFlow id="Flow_Success" name="Yes" sourceRef="Gateway_PaymentCheck" targetRef="Task_UpdateStock" />
+    <bpmn:serviceTask id="Task_UpdateStock" name="Update Stock">
+      <bpmn:incoming>Flow_Success</bpmn:incoming>
+      <bpmn:outgoing>Flow_1j30y34</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_ConfirmOrder_System" name="Confirm Order">
+      <bpmn:incoming>Flow_1j30y34</bpmn:incoming>
+      <bpmn:outgoing>Flow_0h6n327</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1j30y34" sourceRef="Task_UpdateStock" targetRef="Task_ConfirmOrder_System" />
+    <bpmn:serviceTask id="Task_SendConfirmation" name="Send Confirmation Message">
+      <bpmn:incoming>Flow_0h6n327</bpmn:incoming>
+      <bpmn:outgoing>Flow_0sx4w3t</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0h6n327" sourceRef="Task_ConfirmOrder_System" targetRef="Task_SendConfirmation" />
+    <bpmn:serviceTask id="Task_ArrangeShipment" name="Arrange Shipment">
+      <bpmn:incoming>Flow_0sx4w3t</bpmn:incoming>
+      <bpmn:outgoing>Flow_0p0p90g</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0sx4w3t" sourceRef="Task_SendConfirmation" targetRef="Task_ArrangeShipment" />
+    <bpmn:endEvent id="EndEvent_Marketplace_Success">
+      <bpmn:incoming>Flow_0p0p90g</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0p0p90g" sourceRef="Task_ArrangeShipment" targetRef="EndEvent_Marketplace_Success" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="Participant_Customer_di" bpmnElement="Participant_Customer" isHorizontal="true">
+        <dc:Bounds x="129" y="80" width="1401" height="280" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Customer_Checkout_di" bpmnElement="StartEvent_Customer_Checkout">
+        <dc:Bounds x="202" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="183" y="225" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FillDetails_di" bpmnElement="Task_FillDetails">
+        <dc:Bounds x="290" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConfirmOrder_Customer_di" bpmnElement="Task_ConfirmOrder_Customer">
+        <dc:Bounds x="440" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_WaitForResponse_di" bpmnElement="Gateway_WaitForResponse" isMarkerVisible="true">
+        <dc:Bounds x="595" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ReceiveConfirmation_di" bpmnElement="Event_ReceiveConfirmation">
+        <dc:Bounds x="702" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="680" y="79" width="81" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_ReceiveFailure_di" bpmnElement="Event_ReceiveFailure">
+        <dc:Bounds x="702" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="683" y="295" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Customer_Success_di" bpmnElement="EndEvent_Customer_Success">
+        <dc:Bounds x="802" y="122" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Customer_Fail_di" bpmnElement="EndEvent_Customer_Fail">
+        <dc:Bounds x="802" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1u32515_di" bpmnElement="Flow_1u32515">
+        <di:waypoint x="238" y="200" />
+        <di:waypoint x="290" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lwd71x_di" bpmnElement="Flow_1lwd71x">
+        <di:waypoint x="390" y="200" />
+        <di:waypoint x="440" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1sxz85j_di" bpmnElement="Flow_1sxz85j">
+        <di:waypoint x="540" y="200" />
+        <di:waypoint x="595" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0g37n8j_di" bpmnElement="Flow_0g37n8j">
+        <di:waypoint x="620" y="175" />
+        <di:waypoint x="620" y="140" />
+        <di:waypoint x="702" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19tq335_di" bpmnElement="Flow_19tq335">
+        <di:waypoint x="620" y="225" />
+        <di:waypoint x="620" y="270" />
+        <di:waypoint x="702" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0v8lff5_di" bpmnElement="Flow_0v8lff5">
+        <di:waypoint x="738" y="140" />
+        <di:waypoint x="802" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0h0yv3b_di" bpmnElement="Flow_0h0yv3b">
+        <di:waypoint x="738" y="270" />
+        <di:waypoint x="802" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Marketplace_di" bpmnElement="Participant_Marketplace" isHorizontal="true">
+        <dc:Bounds x="129" y="360" width="1401" height="440" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_Marketplace_OrderReceived_di" bpmnElement="StartEvent_Marketplace_OrderReceived">
+        <dc:Bounds x="472" y="512" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="448" y="555" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProcessPayment_di" bpmnElement="Task_ProcessPayment">
+        <dc:Bounds x="560" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_PaymentCheck_di" bpmnElement="Gateway_PaymentCheck" isMarkerVisible="true">
+        <dc:Bounds x="715" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="696" y="475" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendFailureNotification_di" bpmnElement="Task_SendFailureNotification">
+        <dc:Bounds x="820" y="610" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Marketplace_Fail_di" bpmnElement="EndEvent_Marketplace_Fail">
+        <dc:Bounds x="982" y="632" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateStock_di" bpmnElement="Task_UpdateStock">
+        <dc:Bounds x="820" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ConfirmOrder_System_di" bpmnElement="Task_ConfirmOrder_System">
+        <dc:Bounds x="970" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendConfirmation_di" bpmnElement="Task_SendConfirmation">
+        <dc:Bounds x="1120" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ArrangeShipment_di" bpmnElement="Task_ArrangeShipment">
+        <dc:Bounds x="1270" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Marketplace_Success_di" bpmnElement="EndEvent_Marketplace_Success">
+        <dc:Bounds x="1432" y="512" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1d1m2f6_di" bpmnElement="Flow_1d1m2f6">
+        <di:waypoint x="508" y="530" />
+        <di:waypoint x="560" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09d6c7u_di" bpmnElement="Flow_09d6c7u">
+        <di:waypoint x="660" y="530" />
+        <di:waypoint x="715" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0504h67" bpmnElement="Flow_Failure">
+        <di:waypoint x="740" y="555" />
+        <di:waypoint x="740" y="650" />
+        <di:waypoint x="820" y="650" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="748" y="600" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1n87dql_di" bpmnElement="Flow_1n87dql">
+        <di:waypoint x="920" y="650" />
+        <di:waypoint x="982" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a0v43f" bpmnElement="Flow_Success">
+        <di:waypoint x="765" y="530" />
+        <di:waypoint x="820" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="784" y="512" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1j30y34_di" bpmnElement="Flow_1j30y34">
+        <di:waypoint x="920" y="530" />
+        <di:waypoint x="970" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0h6n327_di" bpmnElement="Flow_0h6n327">
+        <di:waypoint x="1070" y="530" />
+        <di:waypoint x="1120" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sx4w3t_di" bpmnElement="Flow_0sx4w3t">
+        <di:waypoint x="1220" y="530" />
+        <di:waypoint x="1270" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0p0p90g_di" bpmnElement="Flow_0p0p90g">
+        <di:waypoint x="1370" y="530" />
+        <di:waypoint x="1432" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0t4n87k_di" bpmnElement="Flow_0t4n87k">
+        <di:waypoint x="490" y="240" />
+        <di:waypoint x="490" y="512" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1e389qf_di" bpmnElement="Flow_1e389qf">
+        <di:waypoint x="870" y="610" />
+        <di:waypoint x="870" y="270" />
+        <di:waypoint x="738" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19l3uoy_di" bpmnElement="Flow_19l3uoy">
+        <di:waypoint x="1170" y="490" />
+        <di:waypoint x="1170" y="140" />
+        <di:waypoint x="738" y="140" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:Definitions>
