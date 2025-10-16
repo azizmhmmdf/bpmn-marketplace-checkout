@@ -1,5 +1,7 @@
 # Proses Checkout Marketplace - BPMN 2.0
 
+![Diagram BPMN Checkout](/customerMarketplace.png)
+
 ## Gambaran Umum
 Di dokumen ini dijelasin alur **proses checkout di marketplace** pakai notasi **BPMN 2.0**. Intinya, kita mau nunjukin gimana **Pelanggan** dan **Sistem Marketplace** saling berinteraksi saat orang mau beli barang online.
 
